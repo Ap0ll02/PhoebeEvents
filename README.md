@@ -28,7 +28,7 @@ You can use hombrew for a macOS install.
 `brew tap ap0ll02/phoebe` and `brew install phoebe`
 
 ### Arch 
-Coming soon: `paru phoebe`
+On the AUR: `paru phoebe`
 
 ### Debian/Ubuntu
 Coming soon.
