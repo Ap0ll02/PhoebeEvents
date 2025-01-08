@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"phoebe/storage"
 
 	"github.com/spf13/cobra"
@@ -22,11 +21,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		events, err := storage.LoadEvents(tomlPath)
-		if err != nil {
-			fmt.Printf("Your events could not be fetched: %v", err)
-			os.Exit(1)
-		}
+		events := storage.LoadEvents(dbPath)
 		fmt.Printf("%s", events)
 	},
 }

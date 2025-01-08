@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tomlPath string
+var dbPath string
 
 // rootCmd represents the root command
 var rootCmd = &cobra.Command{
@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 This is the Phoebe CLI Tool for event and idea management.
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		storage.InitializeEvents(tomlPath)
+		storage.InitializeEvents(dbPath)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("root called")
@@ -38,6 +38,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&tomlPath, "toml", "events.toml", "The file for storing events")
+	rootCmd.PersistentFlags().StringVar(&dbPath, "db", "events.db", "The file for storing events")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

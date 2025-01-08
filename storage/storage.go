@@ -1,97 +1,82 @@
 package storage
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 	"os"
-
-	"github.com/pelletier/go-toml/v2"
 )
 
-type MyEvents struct {
-	EventIDs []int
-	Events   []string
+func LoadEvents(filename string) [][]string {
+	var events [][]string
+	events = append(events, GetEvents(filename, "Monday"))
+	events = append(events, GetEvents(filename, "Tuesday"))
+	events = append(events, GetEvents(filename, "Wednesday"))
+	events = append(events, GetEvents(filename, "Thursday"))
+	events = append(events, GetEvents(filename, "Friday"))
+	events = append(events, GetEvents(filename, "Saturday"))
+	events = append(events, GetEvents(filename, "Sunday"))
+	return events
 }
 
-func LoadEvents(filename string) ([]string, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Printf("Couldn't Read The File: %s", filename)
-		os.Exit(1)
+func GetEvents(filename string, week_day string) []string {
+	db, err := sql.Open("sqlite3", filename)
+	CheckErr(err)
+
+	raw_events, err := db.Query("SELECT " + week_day + " FROM events")
+	CheckErr(err)
+
+	var events []string
+	var event string
+	defer raw_events.Close()
+	for raw_events.Next() {
+		err := raw_events.Scan(&event)
+		CheckErr(err)
+		events = append(events, event)
+		events = append(events, "\n")
 	}
-	var evnt MyEvents
-	if err := toml.Unmarshal(data, &evnt); err != nil {
-		fmt.Printf("Couldn't Unmarshal The Text")
-		os.Exit(1)
-	}
-	err = CheckErr(err)
-
-	return evnt.Events, err
+	err = raw_events.Err()
+	CheckErr(err)
+	return events
 }
 
-func SaveEvents(filename string, week_day string, event string) {
+// func SaveEvents(filename string, week_day string, event string) {
 
-}
+// }
 
 func AddEvents(filename string, week_day string, event string) {
-
+	db, err := sql.Open("sqlite3", filename)
+	CheckErr(err)
+	_, err = db.Exec("INSERT INTO events (" + week_day + ") VALUES ('" + event + "')")
+	CheckErr(err)
 }
 
 func DeleteEvent(filename string, week_day string, event string) {
-
+	db, err := sql.Open("sqlite3", filename)
+	CheckErr(err)
+	_, err = db.Exec("DELETE FROM events WHERE " + week_day + "= '" + event + "'")
+	CheckErr(err)
 }
 
 func ClearEvents(filename string) {
-
+	db, err := sql.Open("sqlite3", filename)
+	CheckErr(err)
+	_, err = db.Exec("DELETE FROM events")
 }
 
 func InitializeEvents(filename string) {
-	init_data := `
-[Monday]
+	db, err := sql.Open("sqlite3", filename)
+	CheckErr(err)
 
-[Tuesday]
+	// Create table
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS events (Monday TEXT(65535), Tuesday TEXT(65535), Wednesay TEXT(65535), Thursday TEXT(65535), Friday TEXT(65535), Saturday TEXT(65535), Sunday TEXT(65535)")
+	CheckErr(err)
+}
 
-[Wednesday]
-
-[Thursday]
-
-[Friday]
-
-[Saturday]
-
-[Sunday]
-	`
-
-	_, err := os.Stat(filename)
-	if !os.IsExist(err) {
-		_, err = os.Create(filename)
-	}
+func CheckErr(err error) {
 	if err != nil {
-		fmt.Printf("Could not stat file %s", filename)
-		os.Exit(1)
-	}
-	// Save init data to initialize weekday categories in toml
-	_, err = os.Open(filename)
-	if err != nil {
-		os.Exit(1)
-	}
-	if f, err := os.Stat(filename); f.Size() == 0 {
-		err = os.WriteFile(filename, []byte(init_data), 0644)
-		if err != nil {
-			fmt.Printf("Bro it is not writing correctly")
-			os.Exit(1)
-		}
-
-	} else if err != nil {
-		fmt.Printf("couldnt stat file, even after checking.")
+		fmt.Printf("Error with the DB file. %v", err)
 		os.Exit(1)
 	}
 	return
-}
-
-func CheckErr(err error) error {
-	if err != nil {
-		fmt.Printf("Error with the TOML file.")
-		return err
-	}
-	return nil
 }

@@ -5,10 +5,8 @@ package cmd
 
 import (
 	"fmt"
-	"phoebe/storage"
-	"strings"
-
 	"github.com/spf13/cobra"
+	"phoebe/storage"
 )
 
 // addCmd represents the add command
@@ -25,11 +23,11 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		week_day := args[0]
 		event := args[1]
-		wds := map[string]bool{"MONDAY": true, "TUESDAY": true, "WEDNESDAY": true, "THURSDAY": true, "FRIDAY": true, "SATURDAY": true, "SUNDAY": true}
+		wds := map[string]bool{"Monday": true, "Tuesday": true, "Wednesday": true, "Thursday": true, "Friday": true, "Saturday": true, "Sunday": true}
 		if !wds[week_day] {
 			fmt.Printf("Invalid Week Day, please write out the full day (Ex: Monday, not Mon)")
 		}
-		storage.AddEvents(tomlPath, week_day, event)
+		storage.AddEvents(dbPath, week_day, event)
 	},
 }
 
