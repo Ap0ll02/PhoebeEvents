@@ -5,9 +5,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"phoebe/storage"
 
 	"github.com/spf13/cobra"
 )
+
+var tomlPath string
 
 // rootCmd represents the root command
 var rootCmd = &cobra.Command{
@@ -16,21 +20,24 @@ var rootCmd = &cobra.Command{
 	Long: `
 This is the Phoebe CLI Tool for event and idea management.
 `,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		storage.InitializeEvents(tomlPath)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("root called")
 	},
 }
 
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
 func init() {
-	rootCmd.AddCommand(rootCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// rootCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&tomlPath, "toml", "events.toml", "The file for storing events")
+	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
